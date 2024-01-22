@@ -160,3 +160,10 @@ ggsave(
   filename = "Figures/ofbeldi.png",
   width = 8, height = 0.6 * 8, scale = 1.3
 )
+
+ggsave(
+  plot = p +
+    theme_metill(type = "blog"),
+  filename = "Figures/ofbeldi_fp.png",
+  width = 8, height = 0.6 * 8, scale = 1.3
+)
