@@ -4,6 +4,7 @@ library(readxl)
 library(hagstofa)
 library(ggh4x)
 library(patchwork)
+library(geomtextpath)
 theme_set(theme_metill())
 
 caption <- str_c(
@@ -14,7 +15,7 @@ caption <- str_c(
 
 pop <- hg_data(
   "https://px.hagstofa.is:443/pxis/api/v1/is/Ibuar/mannfjoldi/2_byggdir/sveitarfelog/MAN02001.px"
-) |> 
+) |>
   filter(
     Aldur == "Alls",
     Kyn == "Alls",
@@ -26,9 +27,9 @@ pop <- hg_data(
       "Mosfellsbær",
       "Hafnarfjörður"
     )
-  ) |> 
-  collect() |> 
-  janitor::clean_names() |> 
+  ) |>
+  collect() |>
+  janitor::clean_names() |>
   mutate(
     sveitarfelag = fct_recode(
       sveitarfelag,
@@ -37,10 +38,10 @@ pop <- hg_data(
       "Hafnarfjarðarkaupstaður" = "Hafnarfjörður",
       "Seltjarnarnesbær" = "Seltjarnarnes"
     )
-  ) |> 
-  rename(pop = 5) |> 
-  select(-aldur, -kyn) |> 
-  mutate(ar = parse_number(ar)) |> 
+  ) |>
+  rename(pop = 5) |>
+  select(-aldur, -kyn) |>
+  mutate(ar = parse_number(ar)) |>
   count(ar, wt = pop, name = "pop")
 
 d <- read_excel("data/logregla_hofudborgarsvaedis.xlsx")
@@ -53,7 +54,7 @@ plot_dat <- d |>
   mutate(
     dags = clock::date_build(ar, man)
   ) |> 
-  select(dags, ar, man, alvarleg = ofbeldi_alvarlegt, samtals = ofbeldi_samtals) |> 
+  select(dags, ar, man, alvarleg = innbrot_heimili, samtals = innbrot_samtals) |> 
   pivot_longer(c(alvarleg, samtals)) |> 
   mutate(
     value = slider::slide_dbl(value, mean, .before = 12),
@@ -73,6 +74,17 @@ plot_dat <- d |>
 p1 <- plot_dat |> 
   filter(name == "alvarleg") |> 
   ggplot(aes(dags, value)) +
+  geom_textline(
+    aes(
+      label = "Ekki skráð gögn hér"
+    ),
+    hjust = 0.31,
+    vjust = -0.4,
+    text_only = TRUE,
+    text_smoothing = 20,
+    linewidth = 0,
+    size = 3
+  ) +
   geom_line() +
   geom_area(
     alpha = 0.4
@@ -92,7 +104,7 @@ p1 <- plot_dat |>
   labs(
     x = NULL,
     y = NULL,
-    subtitle = "Alvarlegar líkamsárasir á Höfuðborgarsvæðinu"
+    subtitle = "Innbrot á heimili á Höfuðborgarsvæðinu"
   )
 
 
@@ -118,7 +130,7 @@ p2 <- plot_dat |>
   labs(
     x = NULL,
     y = NULL,
-    subtitle = "Ofbeldisbrot samtals á Höfuðborgarsvæðinu"
+    subtitle = "Innbrot samtals á Höfuðborgarsvæðinu"
   )
 
 p3 <- plot_dat |> 
@@ -127,6 +139,17 @@ p3 <- plot_dat |>
     p = alvarleg / samtals
   ) |> 
   ggplot(aes(dags, p)) +
+  geom_textline(
+    aes(
+      label = "Innbrot á heimili voru ekki skráð hér"
+    ),
+    hjust = 0.30,
+    vjust = -0.4,
+    text_only = TRUE,
+    text_smoothing = 50,
+    linewidth = 0,
+    size = 3.5
+  ) +
   geom_line() +
   geom_area(
     alpha = 0.4
@@ -139,14 +162,14 @@ p3 <- plot_dat |>
   scale_y_continuous(
     breaks = breaks_pretty(),
     labels = label_hlutf(accuracy = 1),
-    limits = c(0, 0.25),
+    limits = c(0, 0.51),
     expand = expansion(),
     guide = guide_axis_truncated()
   ) +
   labs(
     x = NULL,
     y = NULL,
-    subtitle = "Hlutfall alvarlegra líkamsárása af öllum ofbeldisbrotum á Höfuðborgarsvæðinu"
+    subtitle = "Hlutfall innbrota á heimili af öllum innbrotum á Höfuðborgarsvæðinu"
   )
 
 
@@ -154,7 +177,7 @@ p3 <- plot_dat |>
 p <- (p1 + p2) / 
   p3 +
   plot_annotation(
-    title = "Ofbeldisbrot á Höfuðborgarsvæðinu undanfarinn áratug",
+    title = "Innbrot á Höfuðborgarsvæðinu undanfarinn áratug",
     subtitle = str_c(
       "Tölur sýndar sem meðaltöl undanfarins árs | ",
       "Fjöldatölur sýndar á 100.000 íbúa Höfuðborgarsvæðis"
@@ -166,6 +189,6 @@ p
 
 ggsave(
   plot = p,
-  filename = "Figures/ofbeldi.png",
+  filename = "Figures/innbrot.png",
   width = 8, height = 0.6 * 8, scale = 1.3
 )
