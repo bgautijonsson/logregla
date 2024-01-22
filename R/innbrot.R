@@ -14,31 +14,22 @@ caption <- str_c(
 
 
 pop <- hg_data(
-  "https://px.hagstofa.is:443/pxis/api/v1/is/Ibuar/mannfjoldi/2_byggdir/sveitarfelog/MAN02001.px"
+  "https://px.hagstofa.is:443/pxis/api/v1/is/Ibuar/mannfjoldi/2_byggdir/sveitarfelog/MAN02005.px"
 ) |>
   filter(
     Aldur == "Alls",
     Kyn == "Alls",
     Sveitarfélag %in% c(
-      "Reykjavík",
+      "Reykjavíkurborg",
       "Garðabær",
-      "Kópavogur",
-      "Seltjarnarnes",
+      "Kópavogsbær",
+      "Seltjarnarnesbær",
       "Mosfellsbær",
-      "Hafnarfjörður"
+      "Hafnarfjarðarkaupstaður"
     )
   ) |>
   collect() |>
   janitor::clean_names() |>
-  mutate(
-    sveitarfelag = fct_recode(
-      sveitarfelag,
-      "Reykjavíkurborg" = "Reykjavík",
-      "Kópavogsbær" = "Kópavogur",
-      "Hafnarfjarðarkaupstaður" = "Hafnarfjörður",
-      "Seltjarnarnesbær" = "Seltjarnarnes"
-    )
-  ) |>
   rename(pop = 5) |>
   select(-aldur, -kyn) |>
   mutate(ar = parse_number(ar)) |>
