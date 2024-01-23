@@ -44,7 +44,7 @@ plot_dat <- d |>
   mutate(
     dags = clock::date_build(ar, man)
   ) |> 
-  select(dags, ar, man, alvarleg = ofbeldi_alvarlegt, samtals = ofbeldi_samtals) |> 
+  select(dags, ar, man, alvarleg = fikniefni_storfelld, samtals = fikniefni) |> 
   pivot_longer(c(alvarleg, samtals)) |> 
   mutate(
     value = slider::slide_dbl(value, mean, .before = 12),
@@ -83,7 +83,7 @@ p1 <- plot_dat |>
   labs(
     x = NULL,
     y = NULL,
-    subtitle = "Alvarlegar líkamsárasir á Höfuðborgarsvæðinu"
+    subtitle = "Stórfelld fíkniefnabrot á Höfuðborgarsvæðinu"
   )
 
 
@@ -109,7 +109,7 @@ p2 <- plot_dat |>
   labs(
     x = NULL,
     y = NULL,
-    subtitle = "Ofbeldisbrot samtals á Höfuðborgarsvæðinu"
+    subtitle = "Fíkniefnabrot samtals á Höfuðborgarsvæðinu"
   )
 
 p3 <- plot_dat |> 
@@ -130,14 +130,14 @@ p3 <- plot_dat |>
   scale_y_continuous(
     breaks = breaks_pretty(),
     labels = label_hlutf(accuracy = 1),
-    limits = c(0, 0.25),
+    limits = c(0, 0.1),
     expand = expansion(),
     guide = guide_axis_truncated()
   ) +
   labs(
     x = NULL,
     y = NULL,
-    subtitle = "Hlutfall alvarlegra líkamsárása af öllum ofbeldisbrotum á Höfuðborgarsvæðinu"
+    subtitle = "Hlutfall stórfelldra brota af öllum fíkniefnabrotum á Höfuðborgarsvæðinu"
   )
 
 
@@ -145,7 +145,7 @@ p3 <- plot_dat |>
 p <- (p1 + p2) / 
   p3 +
   plot_annotation(
-    title = "Ofbeldisbrot á Höfuðborgarsvæðinu undanfarinn áratug",
+    title = "Fíkniefnabrot á Höfuðborgarsvæðinu undanfarinn áratug",
     subtitle = str_c(
       "Tölur sýndar sem meðaltöl undanfarins árs | ",
       "Fjöldatölur sýndar á 100.000 íbúa Höfuðborgarsvæðis"
@@ -157,17 +157,7 @@ p
 
 ggsave(
   plot = p,
-  filename = "Figures/ofbeldi.png",
+  filename = "Figures/fikniefni.png",
   width = 8, height = 0.6 * 8, scale = 1.3
 )
 
-ggsave(
-  plot = p &
-    theme(
-      plot.background = element_blank(),
-      panel.background = element_blank(),
-      panel.grid = element_blank()
-    ),
-  filename = "Figures/ofbeldi_fp.png",
-  width = 8, height = 0.6 * 8, scale = 1.3 
-)
