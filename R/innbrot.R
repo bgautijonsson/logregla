@@ -48,7 +48,7 @@ plot_dat <- d |>
   select(dags, ar, man, alvarleg = innbrot_heimili, samtals = innbrot_samtals) |> 
   pivot_longer(c(alvarleg, samtals)) |> 
   mutate(
-    value = slider::slide_dbl(value, mean, .before = 12),
+    value = slider::slide_dbl(value, mean, .before = 11, na.rm = T),
     .by = name
   ) |> 
   inner_join(
@@ -65,16 +65,13 @@ plot_dat <- d |>
 p1 <- plot_dat |> 
   filter(name == "alvarleg") |> 
   ggplot(aes(dags, value)) +
-  geom_textline(
-    aes(
-      label = "Ekki skráð gögn hér"
-    ),
-    hjust = 0.31,
-    vjust = -0.4,
-    text_only = TRUE,
-    text_smoothing = 20,
-    linewidth = 0,
-    size = 3
+  annotate(
+    geom = "text",
+    label = "Ekki skráð",
+    x = clock::date_build(2016, 5, 20),
+    y = 14.4,
+    angle = 60,
+    size = 3.5
   ) +
   geom_line() +
   geom_area(
@@ -130,15 +127,12 @@ p3 <- plot_dat |>
     p = alvarleg / samtals
   ) |> 
   ggplot(aes(dags, p)) +
-  geom_textline(
-    aes(
-      label = "Innbrot á heimili voru ekki skráð hér"
-    ),
-    hjust = 0.30,
-    vjust = -0.4,
-    text_only = TRUE,
-    text_smoothing = 50,
-    linewidth = 0,
+  annotate(
+    geom = "text",
+    label = "Ekki skráð",
+    x = clock::date_build(2016, 5, 20),
+    y = 0.31,
+    angle = 32,
     size = 3.5
   ) +
   geom_line() +

@@ -47,7 +47,7 @@ plot_dat <- d |>
   ) |> 
   select(dags, ar, man, value = thjofnadur) |> 
   mutate(
-    value = slider::slide_dbl(value, mean, .before = 12)
+    value = slider::slide_dbl(value, mean, .before = 11)
   ) |> 
   inner_join(
     pop,

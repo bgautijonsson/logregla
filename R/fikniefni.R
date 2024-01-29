@@ -47,7 +47,7 @@ plot_dat <- d |>
   select(dags, ar, man, alvarleg = fikniefni_storfelld, samtals = fikniefni) |> 
   pivot_longer(c(alvarleg, samtals)) |> 
   mutate(
-    value = slider::slide_dbl(value, mean, .before = 12),
+    value = slider::slide_dbl(value, mean, .before = 11),
     .by = name
   ) |> 
   inner_join(

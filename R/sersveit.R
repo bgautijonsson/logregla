@@ -13,6 +13,7 @@ caption <- str_c(
 )
 
 
+
 pop <- hg_data(
   "https://px.hagstofa.is:443/pxis/api/v1/is/Ibuar/mannfjoldi/2_byggdir/sveitarfelog/MAN02005.px"
 ) |>
@@ -35,31 +36,25 @@ pop <- hg_data(
   mutate(ar = parse_number(ar)) |>
   count(ar, wt = pop, name = "pop")
 
-d <- read_excel("data/logregla_hofudborgarsvaedis.xlsx")
+d <- read_excel("data/sersveit.xlsx")
 
 
 plot_dat <- d |> 
   janitor::clean_names() |> 
-  fill(ar) |>
-  arrange(ar, man) |> 
   mutate(
-    dags = clock::date_build(ar, man)
+    dags = clock::date_build(ar)
   ) |> 
-  select(dags, ar, man, value = hegningarlog) |> 
-  mutate(
-    value = slider::slide_dbl(value, mean, .before = 11)
-  ) |> 
+  select(dags, ar, value = utkoll) |> 
   inner_join(
     pop,
     by = "ar",
-  ) |> 
-  mutate(
-    pop = lm(pop ~ row_number()) |> predict(),
-    value = value / pop * 1e5
   ) 
 
 
 p <- plot_dat |>  
+  mutate(
+    value = value / pop * 1e5
+  ) |> 
   ggplot(aes(dags, value)) +
   geom_line() +
   geom_area(
@@ -75,7 +70,7 @@ p <- plot_dat |>
     labels = label_number(),
     limits = c(0, NA),
     expand = expansion(c(0, 0.05)),
-    guide = guide_axis_truncated(trunc_lower = 0, trunc_upper = 350)
+    guide = guide_axis_truncated()
   ) +
   labs(
     x = NULL,
@@ -92,6 +87,6 @@ p
 
 ggsave(
   plot = p,
-  filename = "Figures/hegningarlog.png",
+  filename = "Figures/sersveit_vopnud.png",
   width = 8, height = 0.5 * 8, scale = 1.3
 )

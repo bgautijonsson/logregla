@@ -4,7 +4,6 @@ library(readxl)
 library(hagstofa)
 library(ggh4x)
 library(patchwork)
-library(geomtextpath)
 theme_set(theme_metill())
 
 caption <- str_c(
@@ -45,9 +44,11 @@ plot_dat <- d |>
   mutate(
     dags = clock::date_build(ar, man)
   ) |> 
-  select(dags, ar, man, value = hegningarlog) |> 
+  select(dags, ar, man, alvarleg = logregla_ofbeldi, samtals = logregla_hotun) |> 
+  pivot_longer(c(alvarleg, samtals)) |> 
   mutate(
-    value = slider::slide_dbl(value, mean, .before = 11)
+    value = slider::slide_dbl(value, mean, .before = 11),
+    .by = name
   ) |> 
   inner_join(
     pop,
@@ -55,11 +56,13 @@ plot_dat <- d |>
   ) |> 
   mutate(
     pop = lm(pop ~ row_number()) |> predict(),
-    value = value / pop * 1e5
+    value = value / pop * 1e5,
+    .by = name
   ) 
 
 
-p <- plot_dat |>  
+p1 <- plot_dat |> 
+  filter(name == "alvarleg") |> 
   ggplot(aes(dags, value)) +
   geom_line() +
   geom_area(
@@ -71,20 +74,53 @@ p <- plot_dat |>
     guide = guide_axis_truncated()
   ) +
   scale_y_continuous(
-    breaks = breaks_pretty(6),
+    breaks = breaks_pretty(),
     labels = label_number(),
     limits = c(0, NA),
     expand = expansion(c(0, 0.05)),
-    guide = guide_axis_truncated(trunc_lower = 0, trunc_upper = 350)
+    guide = guide_axis_truncated()
   ) +
   labs(
     x = NULL,
     y = NULL,
-    title = "Hegningarlagabrot á Höfuðborgarsvæðinu",
+    subtitle = "Ofbeldi gegn lögreglumanni á Höfuðborgarsvæðinu"
+  )
+
+
+p2 <- plot_dat |> 
+  filter(name == "samtals") |> 
+  ggplot(aes(dags, value)) +
+  geom_line() +
+  geom_area(
+    alpha = 0.4
+  ) +
+  scale_x_date(
+    breaks = breaks_width("year"),
+    labels = label_date_short(),
+    guide = guide_axis_truncated()
+  ) +
+  scale_y_continuous(
+    breaks = breaks_pretty(),
+    labels = label_number(),
+    limits = c(0, NA),
+    expand = expansion(c(0, 0.05)),
+    guide = guide_axis_truncated()
+  ) +
+  labs(
+    x = NULL,
+    y = NULL,
+    subtitle = "Hótun lögreglumanns á Höfuðborgarsvæðinu"
+  )
+
+
+
+p <- (p1 + p2) +
+  plot_annotation(
+    title = "Ofbeldi og hótanir á lögreglumönnum Höfuðborgarsvæðisins undanfarinn áratug",
     subtitle = str_c(
       "Tölur sýndar sem meðaltöl undanfarins árs | ",
       "Fjöldatölur sýndar á 100.000 íbúa Höfuðborgarsvæðis"
-    ),
+      ),
     caption = caption
   )
 
@@ -92,6 +128,6 @@ p
 
 ggsave(
   plot = p,
-  filename = "Figures/hegningarlog.png",
-  width = 8, height = 0.5 * 8, scale = 1.3
+  filename = "Figures/ofbeldi_gegn_logreglu.png",
+  width = 8, height = 0.6 * 8, scale = 1.3
 )
