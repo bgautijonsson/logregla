@@ -184,3 +184,66 @@ ggsave(
   width = 8, height = 0.621 * 8, scale = 1.5
 )
 
+
+
+p3 <- read_excel(
+  "Data/1.FJOLDI-BROTA-og-BROT-A-IBUA_stadfestar-tolur.xlsx",
+  sheet = 2
+) |> 
+  pivot_longer(-c(1:4), names_to = "ar", values_to = "fjoldi") |> 
+  mutate(
+    ar = parse_number(ar)
+  ) |> 
+  janitor::clean_names() |> 
+  filter(
+    tegund_brots == "Innbrot (244. gr.)",
+    umdaemi != "Öll embætti"
+  ) |> 
+  ggplot(aes(ar, fjoldi)) +
+  stat_smooth(
+    geom = "line",
+    linewidth = 1.5,
+    span = span,
+    arrow = arrow(length = unit(0.15, "inches"), type = "closed")
+  ) +
+  stat_smooth(
+    geom = "line",
+    span = span,
+    data = ~ rename(.x, umd = umdaemi),
+    aes(group = umd),
+    alpha = 0.1,
+    linewidth = 0.3
+  ) +
+  scale_x_continuous(
+    breaks = seq(2001, 20022, by = 3),
+    guide = guide_axis_truncated()
+  ) +
+  scale_y_continuous(
+    breaks = breaks_log(),
+    limits = c(NA, NA),
+    expand = expansion(),
+    guide = guide_axis_truncated(),
+    trans = "log10"
+  ) +
+  coord_cartesian(
+    ylim = c(NA, NA)
+  ) +
+  facet_wrap("umdaemi") +
+  theme(
+    panel.spacing.x = unit(0.4, "cm")
+  ) +
+  labs(
+    x = NULL,
+    y = NULL,
+    title = "Árlegur fjöldi innbrota eftir umdæmi",
+    subtitle = "Tölur sýndar sem fjöldi afbrota á 100.000 íbúa | Myndin er á lograkvarða þ.a. 1 og 100 eru jafnlangt frá 10",
+    caption = caption
+  )
+
+p3
+
+ggsave(
+  plot = p3,
+  filename = "Figures/innbrot_umdaemi_perpop_log10.png",
+  width = 8, height = 0.621 * 8, scale = 1.5
+)

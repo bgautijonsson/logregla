@@ -13,27 +13,27 @@ caption <- str_c(
 )
 
 
-# pop <- hg_data(
-#   "https://px.hagstofa.is:443/pxis/api/v1/is/Ibuar/mannfjoldi/2_byggdir/sveitarfelog/MAN02005.px"
-# ) |>
-#   filter(
-#     Aldur == "Alls",
-#     Kyn == "Alls",
-#     Sveitarfélag %in% c(
-#       "Reykjavíkurborg",
-#       "Garðabær",
-#       "Kópavogsbær",
-#       "Seltjarnarnesbær",
-#       "Mosfellsbær",
-#       "Hafnarfjarðarkaupstaður"
-#     )
-#   ) |>
-#   collect() |>
-#   janitor::clean_names() |>
-#   rename(pop = 5) |>
-#   select(-aldur, -kyn) |>
-#   mutate(ar = parse_number(ar)) |>
-#   count(ar, wt = pop, name = "pop")
+pop <- hg_data(
+  "https://px.hagstofa.is:443/pxis/api/v1/is/Ibuar/mannfjoldi/2_byggdir/sveitarfelog/MAN02005.px"
+) |>
+  filter(
+    Aldur == "Alls",
+    Kyn == "Alls",
+    Sveitarfélag %in% c(
+      "Reykjavíkurborg",
+      "Garðabær",
+      "Kópavogsbær",
+      "Seltjarnarnesbær",
+      "Mosfellsbær",
+      "Hafnarfjarðarkaupstaður"
+    )
+  ) |>
+  collect() |>
+  janitor::clean_names() |>
+  rename(pop = 5) |>
+  select(-aldur, -kyn) |>
+  mutate(ar = parse_number(ar)) |>
+  count(ar, wt = pop, name = "pop")
 
 d <- read_excel("data/logregla_hofudborgarsvaedis.xlsx")
 
@@ -132,7 +132,11 @@ p2 <- plot_dat |>
   )
 
 p3 <- plot_dat |> 
-  filter(name == "minnihattar") |> 
+  select(-pop) |> 
+  pivot_wider() |> 
+  mutate(
+    value = samtals - heimilis
+  ) |> 
   ggplot(aes(dags, value)) +
   geom_line() +
   geom_area(
@@ -156,7 +160,7 @@ p3 <- plot_dat |>
   labs(
     x = NULL,
     y = NULL,
-    subtitle = "Minniháttar líkamsárásir"
+    subtitle = "Annað en heimilisofbeldi"
   )
 
 p4 <- plot_dat |> 
@@ -263,10 +267,12 @@ p6 <- plot_dat |>
     subtitle = "Tilkynnt heimilisofbeldi (% af heild)"
   )
 
-p7 <- plot_dat |> 
+p7 <-  plot_dat |> 
+  select(-pop) |> 
   pivot_wider() |> 
   mutate(
-    p = minnihattar / samtals
+    value = samtals - heimilis,
+    p = value / samtals
   ) |> 
   ggplot(aes(dags, p)) +
   geom_line() +
@@ -293,7 +299,7 @@ p7 <- plot_dat |>
   labs(
     x = NULL,
     y = NULL,
-    subtitle = "Minniháttar líkamsárásir (% af heild)"
+    subtitle = "Annað en heimilisofbeldi (% af heild)"
   )
 
 
